@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        IMAGE_NAME = "sidharthamahendra/node-docker-app"
+        IMAGE_TAG = "latest"
+    }
+
+    stages {
+        stage('Checkout Source') {
+            steps {
+                git branch: 'main', url: 'https://github.com/sidharthamahendra/<your-repo-name>'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                bat 'npm install'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withDockerRegistry([credentialsId: 'dockerhub', url: '']) {
+                        bat "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Successfully pushed ${IMAGE_NAME}:${IMAGE_TAG} to Docker Hub."
+        }
+        failure {
+            echo "❌ Build failed. Check console output."
+        }
+    }
+}
