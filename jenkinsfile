@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        IMAGE_NAME = "sidharthamahendra/maven-app"
+        IMAGE_NAME = "sidharthmahendra66/maven-app"
         IMAGE_TAG = 'latest'
     }
 
