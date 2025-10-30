@@ -4,45 +4,47 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         IMAGE_NAME = "sidharthamahendra/node-docker-app"
-        IMAGE_TAG = "latest"
+        IMAGE_TAG = 'latest'
     }
 
     stages {
-        stage('Checkout Source') {
+        stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/sidharthamahendra/docker_cicd_integration'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build Docker Image') {
             steps {
-                bat 'npm install'
+                script {
+                    bat "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                }
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Login to Docker Hub') {
             steps {
-                bat "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                script {
+                    bat "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: 'dockerhub', url: '']) {
-                        bat "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
-                    }
+                    bat "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
-    }
 
-    post {
-        success {
-            echo "✅ Successfully pushed ${IMAGE_NAME}:${IMAGE_TAG} to Docker Hub."
-        }
-        failure {
-            echo "❌ Build failed. Check console output."
+        stage('Cleanup') {
+            steps {
+                script {
+                    bat "docker logout"
+                    bat "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                }
+            }
         }
     }
 }
