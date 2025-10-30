@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Source') {
             steps {
-                git branch: 'main', url: 'https://github.com/sidharthamahendra/<your-repo-name>'
+                git branch: 'main', url: 'https://github.com/sidharthamahendra/docker_cicd_integration'
             }
         }
 
